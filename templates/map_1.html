@@ -1,0 +1,577 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<title>mapboxgl-jupyter viz</title>
+<meta charset='UTF-8' />
+<meta name='viewport'
+      content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script type='text/javascript'
+        src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.js'></script>
+<link type='text/css'
+      href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.0.0/mapbox-gl.css' 
+      rel='stylesheet' />
+
+<style type='text/css'>
+    body { margin:0; padding:0; }
+    .map { position: absolute; top:0; bottom:0; width:100%; }
+    .legend {
+        background-color: white;
+        color: #6e6e6e;
+        border-radius: 3px;
+        bottom: 10px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.10);
+        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+        padding: 0;
+        position: absolute;
+        right: 10px;
+        z-index: 1;
+        min-width: 100px;
+    }
+   .legend.horizontal {bottom: 10px; text-align: left;}
+
+    /* legend header */
+    .legend .legend-header { border-radius: 3px 3px 0 0; background: white; }
+    .legend .legend-title {
+        padding: 6px 12px 6px 12px;
+        text-shadow: 0 0 2px white;
+        text-transform: capitalize;
+        text-align: center;
+        font-weight: bold !important;
+        font-size: 14px;
+        font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+        max-width: 160px;
+    }
+    .legend-title {padding: 6px 12px 6px 12px; text-shadow: 0 0 2px #FFF; text-transform: capitalize; text-align: center; max-width: 160px; font-size: 0.9em; font-weight: bold;}
+    .legend.horizontal .legend-title {text-align: left;}
+
+    /* legend items */
+    .legend-content {margin: 6px 12px 6px 12px; overflow: hidden; padding: 0; float: left; list-style: none; font-size: 0.8em;}
+    .legend.vertical .legend-item {white-space: nowrap;}
+    .legend-value {display: inline-block; line-height: 18px; vertical-align: top;}
+    .legend.horizontal ul.legend-content li.legend-item .legend-value,
+    .legend.horizontal ul.legend-content li.legend-item {display: inline-block; float: left; width: 30px; margin-bottom: 0; text-align: center; min-height: 30px;}
+
+    /* legend key styles */
+    .legend-key {display: inline-block; height: 10px;}
+    .legend-key.default, .legend-key.square {border-radius: 0;}
+    .legend-key.circle {border-radius: 50%;}
+    .legend-key.rounded-square {border-radius: 20%;}
+    .legend.vertical .legend-key {width: 10px; margin-right: 5px; margin-left: 1px;}
+    .legend.horizontal .legend-key {width: 30px; margin-right: 0; margin-top: 1px; float: left;}
+    .legend.horizontal .legend-key.square, .legend.horizontal .legend-key.rounded-square, .legend.horizontal .legend-key.circle {margin-left: 10px; width: 10px;}
+    .legend.horizontal .legend-key.line {margin-left: 5px;}
+    .legend.horizontal .legend-key.line, .legend.vertical .legend-key.line {border-radius: 10%; width: 20px; height: 3px; margin-bottom: 2px;}
+
+    /* gradient bar alignment */
+    .gradient-bar {margin: 6px 12px 6px 12px;}
+    .legend.horizontal .gradient-bar {width: 88%; height: 10px;}
+    .legend.vertical .gradient-bar {width: 10px; min-height: 50px; position: absolute; bottom: 4px;}
+
+    /* contiguous vertical bars (discrete) */
+    .legend.vertical.contig .legend-key {height: 15px; width: 10px;}
+    .legend.vertical.contig li.legend-item {height: 15px;}
+    .legend.vertical.contig {padding-bottom: 6px;}
+
+    /* vertical radius legend */
+    .legend.horizontal.legend-variable-radius ul.legend-content li.legend-item .legend-value,
+    .legend.horizontal.legend-variable-radius ul.legend-content li.legend-item {width: 30px; min-height: 20px;}
+
+    /* scale annotation */
+    .mapboxgl-ctrl.mapboxgl-ctrl-scale { border-color: #6e6e6e; 
+                                         background-color: white; 
+                                         color: #131516; }
+</style>
+
+
+    <style type='text/css'>
+        .gradient.bordered, .legend-key.bordered { border: solid white 2px; }
+    </style>
+
+
+</head>
+<body>
+
+<div id='map' class='map'></div>
+
+<script type='text/javascript'>
+
+var legendHeader;
+
+function calcColorLegend(myColorStops, title) {
+    // create legend
+    var legend = document.createElement('div'),
+        legendContainer = document.getElementsByClassName('mapboxgl-ctrl-bottom-right')[0];
+
+    if ('rounded-square' === 'contiguous-bar') {
+        legend.className = 'legend vertical contig';
+    }
+    else {
+        legend.className = 'legend vertical';
+    }
+    legend.id = 'legend-0';
+    document.body.appendChild(legend);
+    // add legend header and content elements
+    var mytitle = document.createElement('div'),
+        legendContent = document.createElement('ul');
+    legendHeader = document.createElement('div');
+    mytitle.textContent = title;
+    mytitle.className = 'legend-title'
+    legendHeader.className = 'legend-header'
+    legendContent.className = 'legend-content'
+    legendHeader.appendChild(mytitle);
+    legend.appendChild(legendHeader);
+    legend.appendChild(legendContent);
+    if (false === true) {
+        var gradientText = 'linear-gradient(to right, ',
+            gradient = document.createElement('div');
+        gradient.className = 'gradient-bar';
+        legend.appendChild(gradient);
+    }
+    // calculate a legend entries on a Mapbox GL Style Spec property function stops array
+    for (p = 0; p < myColorStops.length; p++) {
+        if (!!document.getElementById('legend-color-points-value-' + p)) {
+            // update the legend if it already exists
+            document.getElementById('legend-color-points-value-' + p).textContent = myColorStops[p][0];
+            document.getElementById('legend-color-points-id-' + p).style.backgroundColor = myColorStops[p][1];
+        }
+        else {
+            // create the legend if it doesn't yet exist
+            var item = document.createElement('li');
+            item.className = 'legend-item';
+            var key = document.createElement('span');
+            key.className = 'legend-key rounded-square';
+            key.id = 'legend-color-points-id-' + p;
+            key.style.backgroundColor = myColorStops[p][1];
+            var value = document.createElement('span');
+            value.className = 'legend-value';
+            value.id = 'legend-color-points-value-' + p;
+            item.appendChild(key);
+            item.appendChild(value);
+            legendContent.appendChild(item);
+            
+            data = document.getElementById('legend-color-points-value-' + p)
+            // round number values in legend if precision defined
+            if ((typeof(myColorStops[p][0]) == 'number') && (typeof(null) == 'number')) {
+                data.textContent = myColorStops[p][0].toFixed(null);
+            }
+            else {
+                data.textContent = myColorStops[p][0];
+            }
+            // add color stop to gradient list
+            if (false === true) {
+                if (p < myColorStops.length - 1) {
+                    gradientText = gradientText + myColorStops[p][1] + ', ';
+                }
+                else {
+                    gradientText = gradientText + myColorStops[p][1] + ')';
+                }
+                if ('vertical' === 'vertical') {
+                    gradientText = gradientText.replace('to right', 'to bottom');
+                }
+            }
+        }
+    }
+    if (false === true) {
+        // convert to gradient scale appearance
+        gradient.style.background = gradientText;
+        // hide legend keys generated above
+        var keys = document.getElementsByClassName('legend-key');
+        for (var i=0; i < keys.length; i++) {
+            keys[i].style.visibility = 'hidden';
+        }
+        if ('vertical' === 'vertical') {
+            gradient.style.height = (legendContent.offsetHeight - 6) + 'px';
+        }
+    }
+    // add class for styling bordered legend keys
+    if (true) {
+        var keys = document.getElementsByClassName('legend-key');
+        for (var i=0; i < keys.length; i++) {
+            if (keys[i]) {
+                keys[i].classList.add('bordered');
+            }
+        }
+        var gradientBars = document.getElementsByClassName('gradient-bar');
+        for (var i=0; i < keys.length; i++) {
+            if (gradientBars[i]) {
+                gradientBars[i].classList.add('bordered');
+            }
+        }
+    }
+    // update right-margin for compact Mapbox attribution based on calculated legend width
+    updateAttribMargin(legend);
+    updateLegendMargin(legend);
+}
+
+
+function calcRadiusLegend(myRadiusStops, title, color) {
+
+    // maximum legend item height
+    var maxLegendItemHeight = 2 * myRadiusStops[myRadiusStops.length - 1][1];
+
+    // create legend
+    var legend = document.createElement('div');
+    legend.className = 'legend vertical legend-variable-radius';
+
+    legend.id = 'legend-1';
+    document.body.appendChild(legend);
+
+    // add legend header and content elements
+    var mytitle = document.createElement('div'),
+        legendContent = document.createElement('ul');
+    legendHeader = document.createElement('div');
+    mytitle.textContent = title;
+    mytitle.className = 'legend-title'
+    legendHeader.className = 'legend-header'
+    legendContent.className = 'legend-content'
+    legendHeader.appendChild(mytitle);
+    legend.appendChild(legendHeader);
+    legend.appendChild(legendContent);
+
+    // calculate a legend entries on a Mapbox GL Style Spec property function stops array
+    for (p = 0; p < myRadiusStops.length; p++) {
+        if (!!document.getElementById('legend-radius-points-value-' + p)) {
+            //update the legend if it already exists
+            document.getElementById('legend-radius-points-value-' + p).textContent = myRadiusStops[p][0];
+            document.getElementById('legend-radius-points-id-' + p).style.backgroundColor = color;
+        }
+        else {
+            // create the legend if it doesn't yet exist
+            var item = document.createElement('li');
+            item.className = 'legend-item';
+            item.height = '' + maxLegendItemHeight + 'px';
+
+            var key = document.createElement('span');
+            key.className = 'legend-key rounded-square';
+            key.id = 'legend-radius-points-id-' + p;
+            key.style.backgroundColor = color;   
+
+            key.style.width = '' + myRadiusStops[p][1] * 2 + 'px';
+            key.style.height = '' + myRadiusStops[p][1] * 2 + 'px';
+
+            keyVerticalMargin = (maxLegendItemHeight - myRadiusStops[p][1] * 2) * 0.5;
+            key.style.marginTop = '' + keyVerticalMargin + 'px';
+            key.style.marginBottom = '' + keyVerticalMargin + 'px';
+
+            var value = document.createElement('span');
+            value.className = 'legend-value';
+            value.id = 'legend-radius-points-value-' + p;
+
+            item.appendChild(key);
+            item.appendChild(value);
+            legendContent.appendChild(item);
+            
+            data = document.getElementById('legend-radius-points-value-' + p)
+
+            // round number values in legend if precision defined
+            if ((typeof(myRadiusStops[p][0]) == 'number') && (typeof(null) == 'number')) {
+                data.textContent = myRadiusStops[p][0].toFixed(null);
+            }
+            else {
+                data.textContent = myRadiusStops[p][0];
+            }
+        }
+    }
+
+    // add class for styling bordered legend keys
+    if (true) {
+        var keys = document.getElementsByClassName('legend-key');
+        for (var i=0; i < keys.length; i++) {
+            if (keys[i]) {
+                keys[i].classList.add('bordered');
+            }
+        }
+    }
+
+    // update right-margin for compact Mapbox attribution based on calculated legend width
+    updateAttribMargin(legend);
+    updateLegendMargin(legend);
+
+}
+
+
+function updateAttribMargin(legend) {
+
+    // default margin is based on calculated legend width
+    var attribMargin = legend.offsetWidth + 15;
+    
+    // if horizontal legend layout (multiple legends are stacked vertically)
+    if ('vertical' === 'horizontal') {
+        document.getElementsByClassName('mapboxgl-ctrl-attrib')[0].style.marginRight = (attribMargin).toString() + 'px';
+    }
+    // vertical legend layout means multiple legends are side-by-side
+    else if ('vertical' === 'vertical') {
+        var currentMargin = Number(document.getElementsByClassName('mapboxgl-ctrl-attrib')[0].style.marginRight.replace('px', ''));
+        document.getElementsByClassName('mapboxgl-ctrl-attrib')[0].style.marginRight = (attribMargin + currentMargin).toString() + 'px';
+    }
+}
+
+
+function updateLegendMargin(legend) {
+
+    var verticalLegends = document.getElementsByClassName('legend vertical'),
+        horizontalLegends = document.getElementsByClassName('legend horizontal');
+
+    if (verticalLegends.length > 1) {
+        for (i = 1; i < verticalLegends.length; i++) {
+            verticalLegends[i].style.marginRight = (legend.offsetWidth - 5).toString() + 'px';
+            var legend = verticalLegends[i];
+        }
+    }
+    else if (horizontalLegends.length > 1) {
+        for (i = 1; i < horizontalLegends.length; i++) {
+            horizontalLegends[i].style.marginBottom = (legend.offsetHeight + 15).toString() + 'px';
+            var legend = horizontalLegends[i];
+        }
+    }
+}
+
+
+function generateInterpolateExpression(propertyValue, stops) {
+    var expression;
+    if (propertyValue == 'zoom') {
+        expression = ['interpolate', ['exponential', 1.2], ['zoom']]
+    }
+    else if (propertyValue == 'heatmap-density') {
+        expression = ['interpolate', ['linear'], ['heatmap-density']]
+    }
+    else {
+        expression = ['interpolate', ['linear'], ['get', propertyValue]]
+    }
+
+    for (var i=0; i<stops.length; i++) {
+        expression.push(stops[i][0], stops[i][1])
+    }
+    return expression
+}
+
+
+function generateMatchExpression(propertyValue, stops, defaultValue) {
+    var expression;
+    expression = ['match', ['get', propertyValue]]
+    for (var i=0; i<stops.length; i++) {
+        expression.push(stops[i][0], stops[i][1])
+    }
+    expression.push(defaultValue)
+    
+    return expression
+}
+
+
+function generatePropertyExpression(expressionType, propertyValue, stops, defaultValue) {
+    var expression;
+    if (expressionType == 'match') {
+        expression = generateMatchExpression(propertyValue, stops, defaultValue)
+    }
+    else if (propertyValue == 'identity') {
+        expression = ['get', propertyValue]
+    }
+    else {
+        expression = generateInterpolateExpression(propertyValue, stops)
+    }
+
+    return expression
+}
+
+</script>
+
+<!-- main map creation code, extended by mapboxgl/templates/choropleth.html -->
+<script type="text/javascript">
+
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZHVjazk2NjciLCJhIjoiY2thNzRiMXhxMGQ5NTJ0cXB0dGpmZ3RrOSJ9.f45On_lrv6Nm4iO7oCg7nw';
+
+    var transformRequest = function(url, resourceType) {
+        const isMapboxRequest = url.slice(8, 22) === 'api.mapbox.com' ||
+          url.slice(10, 26) === 'tiles.mapbox.com';
+      
+        return {
+          url: isMapboxRequest ? url.replace('?', '?pluginName=PythonMapboxgl&') : url
+        }
+    };
+
+    var map = new mapboxgl.Map({
+        container: 'map',
+        attributionControl: false,
+        style: 'mapbox://styles/mapbox/light-v10?optimize=true',
+        center: [126.986, 37.565],
+        zoom: 9.5,
+        pitch: 0,
+        bearing: 0,
+        scrollZoom: true,
+        touchZoom: true,
+        doubleClickZoom: true,
+        boxZoom: true,
+        preserveDrawingBuffer: false,
+        transformRequest: transformRequest
+    });
+
+    
+    
+        map.addControl(new mapboxgl.AttributionControl({ compact: true }));
+
+    
+
+    
+
+        map.addControl(new mapboxgl.NavigationControl());
+
+    
+
+    
+    
+    
+        
+            calcColorLegend([[5.617021276595745, 'rgb(237,248,251)'], [6.3135383496576125, 'rgb(179,205,227)'], [7.3650826868363755, 'rgb(140,150,198)'], [11.396412240590925, 'rgb(136,65,157)']], "면적당 민원수");
+        
+    
+
+
+
+    
+        
+        
+
+    
+
+    
+
+    map.on('style.load', function() {
+        
+        
+
+        // Add geojson data source
+        map.addSource("data", {
+            "type": "geojson",
+            "data": {"type": "FeatureCollection", "features": [{"type": "Feature", "properties": {"자치구명": "강남구", "면적당 민원수": 7.5188, "분석기간": "2015-02~2018-06"}, "geometry": {"type": "Polygon", "coordinates": [[[127.05617359288398, 37.528799749225676], [127.0665698130372, 37.524779423505024], [127.06610425556381, 37.52062758676938], [127.06676628842806, 37.51967796437217], [127.0694146000724, 37.50474013587669], [127.0739808967127, 37.501112695580304], [127.07800206733889, 37.50033151325589], [127.0963509639092, 37.49552529254068], [127.10183125798602, 37.49322825064964], [127.1052937689776, 37.49110875954992], [127.10867085201238, 37.48820838151244], [127.1118875173445, 37.48323157362458], [127.11130709617507, 37.48213333484932], [127.12015007208167, 37.470069874909385], [127.12191393026374, 37.46692715236855], [127.12190571080893, 37.464904455870474], [127.11707248720776, 37.46186217377656], [127.11635903757606, 37.458284348786506], [127.11285741803938, 37.459725564543206], [127.11163179478714, 37.46125072431525], [127.10591788934951, 37.46222888008147], [127.10311257180658, 37.459315702518744], [127.09782466845218, 37.45848440195682], [127.09592759318751, 37.46112253857461], [127.09462653145508, 37.46334819448065], [127.08789613625872, 37.468020545397714], [127.08410056346911, 37.472564030577786], [127.08390440578157, 37.47519793518465], [127.0777737559454, 37.47447305755262], [127.07352132306535, 37.47255021331707], [127.07226117209942, 37.47449174520626], [127.06981320371885, 37.474849145880185], [127.06885137525977, 37.47357802023145], [127.06213901956463, 37.47253474490574], [127.06121868919344, 37.4686503234869], [127.0563551029968, 37.46811178074317], [127.0534170481904, 37.4684228914077], [127.04463549385288, 37.47697941924486], [127.04095123620755, 37.485264155951086], [127.03371915098798, 37.48425802427603], [127.03122275812187, 37.489244346624105], [127.02015609299096, 37.51247010625141], [127.01788705349843, 37.52021683027875], [127.01667707838057, 37.522585205855194], [127.01147119667513, 37.52753988289669], [127.02052831890559, 37.534818995826626], [127.0244608080842, 37.53734752757724], [127.0294617044248, 37.53856429147042], [127.04556779588437, 37.532201985750866], [127.04653802830752, 37.53390496708317], [127.04866490008963, 37.53225116557232], [127.05617359288398, 37.528799749225676]]]}}, {"type": "Feature", "properties": {"자치구명": "구로구", "면적당 민원수": 7.05765, "분석기간": "2015-02~2018-06"}, "geometry": {"type": "Polygon", "coordinates": [[[126.82438081517314, 37.50798972232896], [126.82872110953281, 37.50791191299514], [126.8316914436862, 37.504880608508806], [126.8360046623421, 37.502154380835044], [126.84020526111829, 37.50369005284237], [126.8396330711049, 37.505232974784036], [126.84439618668257, 37.50537086505149], [126.84480715497963, 37.50772159123912], [126.84829659934003, 37.508519385891645], [126.8496985385098, 37.50981060143219], [126.8524910115563, 37.51027425524487], [126.85517018319959, 37.508935784048155], [126.8577448049945, 37.50964262450898], [126.85969488732715, 37.50638438562706], [126.86204914535695, 37.50638350542007], [126.86275729660478, 37.504948483868894], [126.86545186545288, 37.50525599588571], [126.86859220473953, 37.50453922322315], [126.87182642792102, 37.50510287829134], [126.87306919864359, 37.508220626917996], [126.87804908630636, 37.513980262146966], [126.87906402353862, 37.51647003476568], [126.89003696873205, 37.51125582175844], [126.89344776782485, 37.50717528130917], [126.89299571721683, 37.50283127915717], [126.89331061458084, 37.49641346191318], [126.89611362258316, 37.488754053687586], [126.90010188508028, 37.485326269207356], [126.90281975801813, 37.484680875754286], [126.89906094129896, 37.48003842789901], [126.89854536043339, 37.478647465885835], [126.89439977603885, 37.478205938886425], [126.88866882970154, 37.47931803032367], [126.88553217321346, 37.48225290808737], [126.8802497570056, 37.485663405638775], [126.87829109105627, 37.486282878314256], [126.87433271502428, 37.4850765916073], [126.87676901338844, 37.4876363312754], [126.87557822721698, 37.48874766140448], [126.87250855887376, 37.48802940895404], [126.87249999632084, 37.48973558386031], [126.86735088086947, 37.49347285692674], [126.86440708512153, 37.49100048185492], [126.86084463261253, 37.48952105213313], [126.85729281993241, 37.48559390333688], [126.8546926758503, 37.48490025436929], [126.85332775745682, 37.48258159809108], [126.85147991619827, 37.481325339964016], [126.84664329670241, 37.481757307764795], [126.84554505350411, 37.48066046793034], [126.84512676054953, 37.473967239363226], [126.83904264465728, 37.4753980419], [126.83504691879544, 37.47501405393604], [126.8313800598926, 37.4772683882548], [126.82886668931549, 37.475941549555245], [126.8241002519782, 37.476145449531515], [126.82169365698964, 37.47545108090223], [126.81929895415682, 37.47768076838956], [126.81956789884786, 37.48139514031285], [126.81889445214092, 37.48386482338644], [126.81958805042494, 37.485496885182876], [126.82308489219227, 37.48747306755705], [126.82232114643597, 37.48967399070965], [126.81743148808916, 37.49127864988337], [126.81399745505314, 37.492955810141474], [126.81230709048222, 37.49586228434961], [126.81268179823208, 37.49773379364218], [126.81521493003457, 37.497248098657494], [126.8183295567048, 37.498446899792405], [126.81954657426579, 37.50101634597747], [126.8211796375001, 37.501758301080585], [126.82254736331406, 37.505526126404426], [126.82219248121312, 37.50746239513798], [126.82438081517314, 37.50798972232896]]]}}, {"type": "Feature", "properties": {"자치구명": "서대문구", "면적당 민원수": 5.61702, "분석기간": "2015-02~2018-06"}, "geometry": {"type": "Polygon", "coordinates": [[[126.9499752030572, 37.60758692737045], [126.95230868778256, 37.606317650679024], [126.9531411700246, 37.604327148276774], [126.95234771718951, 37.60011368186209], [126.95369178283661, 37.59825826218021], [126.95674434840932, 37.59795024466215], [126.95592779914786, 37.59485667320782], [126.957924902266, 37.59118913291801], [126.95798802632432, 37.589702077053744], [126.95629970726017, 37.584398264711616], [126.95927754536156, 37.582201242569106], [126.95539326971087, 37.58043453336025], [126.95315425846464, 37.57858079088145], [126.96623633279076, 37.56563604690827], [126.96919209525231, 37.56171654641677], [126.96650073076728, 37.56100929094393], [126.96320855677983, 37.55901237749232], [126.96108226710813, 37.55855635475154], [126.95830686210321, 37.55636236039188], [126.95666768398142, 37.55718176051932], [126.94064477022111, 37.5561460848349], [126.93648161798973, 37.55481000372812], [126.92622097190046, 37.55853453394173], [126.92631397392812, 37.560702848902], [126.92784243306369, 37.56304720372433], [126.92528174854314, 37.56499562402377], [126.91939004506, 37.566417989732955], [126.90437243065779, 37.57309762097416], [126.90120105002282, 37.575167227388334], [126.90272065831053, 37.576597005225736], [126.91214724464083, 37.58572852998545], [126.91577498278953, 37.58526881451649], [126.91542000144513, 37.582849978046674], [126.92194169370404, 37.58373389973991], [126.92346484570709, 37.58691659356971], [126.92566970031861, 37.58687661602836], [126.92771711005331, 37.58809126746845], [126.92746402426377, 37.59017009299767], [126.92854958440722, 37.59246937993664], [126.93325441237548, 37.59610578859697], [126.94027481511083, 37.59837806191211], [126.94109054641505, 37.60284871312552], [126.94201473597087, 37.604531953807516], [126.94451525068315, 37.60452809548097], [126.94669787550161, 37.60756379949065], [126.9499752030572, 37.60758692737045]]]}}, {"type": "Feature", "properties": {"자치구명": "성북구", "면적당 민원수": 5.94148, "분석기간": "2015-02~2018-06"}, "geometry": {"type": "Polygon", "coordinates": [[[126.974675406416, 37.631097154003875], [126.9769090069433, 37.633215445683646], [126.98110012419735, 37.634415771386074], [126.98422705513869, 37.636276412881955], [126.98520525216911, 37.635156103409486], [126.9908714170822, 37.63172019292486], [126.99279660787617, 37.63173863577322], [126.99364706382866, 37.629697171298986], [126.99617431516042, 37.628797613391164], [126.99960238658002, 37.62548451455771], [127.00747935126599, 37.62361906051553], [127.00710949401902, 37.62072603840364], [127.00810611893628, 37.61824123638535], [127.01031547495231, 37.61615224347025], [127.01435658093551, 37.615301153595155], [127.01886282940177, 37.61346147513717], [127.02183990415497, 37.61097763545628], [127.02601994524015, 37.61237827182396], [127.02979982090541, 37.61203610416703], [127.03001659844593, 37.608847050091335], [127.03642400992301, 37.612215611023814], [127.03947205184261, 37.615338591864074], [127.0435676006384, 37.6183856478017], [127.04637981022049, 37.62223841113549], [127.04959373568619, 37.62414065487782], [127.05381594723272, 37.61988373018764], [127.06162260483201, 37.6140839902766], [127.06476783142085, 37.61386014256744], [127.06761594002495, 37.6152769191002], [127.07101243825278, 37.61533660342313], [127.07132707099227, 37.60651928986419], [127.07007736686556, 37.60904335765868], [127.06819716820665, 37.60903037341939], [127.06834342033339, 37.60657877132597], [127.06503185518703, 37.60522421459874], [127.06174828533608, 37.60484356864383], [127.0587685122857, 37.60073077263369], [127.056985363799, 37.60124357142048], [127.05163734593897, 37.5996595374718], [127.04988061017225, 37.60081227127557], [127.04725439355248, 37.595994212843166], [127.0436318196879, 37.59601418051359], [127.040205222094, 37.594894375933904], [127.03866895171082, 37.59097599306138], [127.0359945038446, 37.589629138658424], [127.02871630347839, 37.58207997701485], [127.02277254528003, 37.577746162452485], [127.02145698453867, 37.57856808689672], [127.01789107536422, 37.57827187255359], [127.01599412471285, 37.581547603344646], [127.01428966486051, 37.58193162455397], [127.00844467951529, 37.58015758282494], [127.00664513999259, 37.58178387879304], [127.00646672237498, 37.585012606964874], [127.00553641804285, 37.5866154647404], [127.00203322588274, 37.588763256117076], [127.00054474231644, 37.59209898679736], [126.99524058571116, 37.59194568945197], [126.99397930158565, 37.59095217708608], [126.99098293358314, 37.59106545721615], [126.98608114244759, 37.59221272682123], [126.98346926877026, 37.59355697466976], [126.98161250331745, 37.59555007059415], [126.98116752610544, 37.598850797276384], [126.98450989661556, 37.59914611897289], [126.98734276495587, 37.600923016776825], [126.9855021251863, 37.60684406739665], [126.98656118629816, 37.61028324866486], [126.98629865992385, 37.6143927319756], [126.9824070918475, 37.616403031329504], [126.98047129719916, 37.62246223346171], [126.97880955822086, 37.62428156795281], [126.97912508963613, 37.6289129133578], [126.97627284074368, 37.62855559220399], [126.974675406416, 37.631097154003875]]]}}, {"type": "Feature", "properties": {"자치구명": "동대문구", "면적당 민원수": 11.39641, "분석기간": "2015-02~2018-06"}, "geometry": {"type": "Polygon", "coordinates": [[[127.02277254528003, 37.577746162452485], [127.02871630347839, 37.58207997701485], [127.0359945038446, 37.589629138658424], [127.03866895171082, 37.59097599306138], [127.040205222094, 37.594894375933904], [127.0436318196879, 37.59601418051359], [127.04725439355248, 37.595994212843166], [127.04988061017225, 37.60081227127557], [127.05163734593897, 37.5996595374718], [127.056985363799, 37.60124357142048], [127.0587685122857, 37.60073077263369], [127.06174828533608, 37.60484356864383], [127.06503185518703, 37.60522421459874], [127.06834342033339, 37.60657877132597], [127.06819716820665, 37.60903037341939], [127.07007736686556, 37.60904335765868], [127.07132707099227, 37.60651928986419], [127.07231016030349, 37.60250012932336], [127.07207336676376, 37.600818056134095], [127.06966156147413, 37.59787631888819], [127.06902840437725, 37.59591316175067], [127.07077401376529, 37.58845449844206], [127.07662345005859, 37.581056579142604], [127.07779626481297, 37.57771980955321], [127.07818541280403, 37.57156425519017], [127.07171053024362, 37.55974769712085], [127.07037485628253, 37.56027591771644], [127.05901678590773, 37.56192885203987], [127.05781059899311, 37.562422511807284], [127.04755601081567, 37.57007761259084], [127.0417866611438, 37.572724763048654], [127.03753329296518, 37.57260227772625], [127.03233042272745, 37.57004976730671], [127.02932413083377, 37.56962900013391], [127.02297266349976, 37.57144355223773], [127.02277254528003, 37.577746162452485]]]}}]},
+            "buffer": 1,
+            "maxzoom": 14
+        });
+
+        // Add data layer
+        map.addLayer({
+            "id": "choropleth-fill",
+            "source": "data",
+            "type": "fill",
+            "paint": {
+                "fill-color": ["case",
+                    ["boolean", ["feature-state", "hover"], false], 
+                    "black",
+                    generatePropertyExpression("interpolate", "면적당 민원수", [[5.617021276595745, 'rgb(237,248,251)'], [6.3135383496576125, 'rgb(179,205,227)'], [7.3650826868363755, 'rgb(140,150,198)'], [11.396412240590925, 'rgb(136,65,157)']], "grey")],
+                "fill-opacity": 1
+            }
+        }, "" );
+
+        // Add border layer
+        map.addLayer({
+            "id": "choropleth-line",
+            "source": "data",
+            "type": "line",
+            "layout": {
+                "line-join": "round",
+                "line-cap": "round"
+            },
+            "paint": {
+                
+                "line-dasharray": [1, 0],
+                
+                "line-color": ["case",
+                    ["boolean", ["feature-state", "hover"], false], 
+                    "black",
+                    "white"],
+                "line-width": 2,
+                "line-opacity": 1
+            }
+        }, "" );
+
+        // Add label layer
+        map.addLayer({
+            "id": "choropleth-label",
+            "source": "data",
+            "type": "symbol",
+            "layout": {
+                
+                "text-size" : generateInterpolateExpression('zoom', [[0, 8],[22, 3* 8]] ),
+                "text-offset": [0,-1]
+            },
+            "paint": {
+                "text-halo-color": "white",
+                "text-halo-width": generatePropertyExpression('interpolate', 'zoom', [[0,1], [18,5* 1]]),
+                "text-color": ["case",
+                    ["boolean", ["feature-state", "hover"], false], 
+                    "black", "#131516"]
+            }
+        }, "" );
+
+        // Optional extrusion layer
+        
+
+        
+
+        // Popups
+        var interactionLayer =  'choropleth-fill' ;
+        
+            var popupAction = 'mousemove',
+                popupSettings =  {
+                    closeButton: false,
+                    closeOnClick: false
+                };
+        
+
+        // Create a popup
+        var popup = new mapboxgl.Popup(popupSettings);
+        
+        
+
+        // Show the popup on mouseover
+        var hoveredStateId = 0;
+
+        map.on(popupAction, function(e) {
+            var features = map.queryRenderedFeatures(e.point, {layers: [interactionLayer, 'choropleth-label'] });
+
+            if (features.length > 0) {
+                map.getCanvas().style.cursor = 'pointer';
+                var f = features[0];
+                newHoveredStateId = f.id;
+                if (newHoveredStateId != hoveredStateId) {
+                    map.removeFeatureState({source: 'data', id: hoveredStateId});
+                    hoveredStateId = newHoveredStateId;
+                }
+                map.setFeatureState({source: 'data', id: hoveredStateId}, { hover: true});
+                let popup_html = '<div>';
+
+                for (key in f.properties) {
+                    popup_html += '<li><b> ' + key + '</b>: ' + f.properties[key] + ' </li>'
+                }
+
+                popup_html += '</div>'
+                popup.setLngLat(e.lngLat)
+                    .setHTML(popup_html)
+                    .addTo(map);
+            }
+            else {
+                map.getCanvas().style.cursor = '';
+                popup.remove();
+                map.removeFeatureState({source: 'data', id: hoveredStateId});
+            }
+        });
+
+        
+        
+        // Fly to selected feature on click
+        map.on('click', interactionLayer, function(e) {
+            map.easeTo({
+                center: e.lngLat
+            });
+        });
+
+    });
+
+
+
+</script>
+
+<!-- add capability to export map or legend to image file -->
+
+
+</body>
+</html>

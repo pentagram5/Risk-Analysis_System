@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="ko">
+    
+<head>
+    <script type="text/javascript">
+    
+        function addressKindChange(e, dict_file) {
+            var dict_file = dict_file
+            var target = document.getElementById("addressKindD");
+            var d = e.value
+            target.options.length = 0;
+            var li = dict_file[d]
+            li.forEach(function(li) {
+                var opt = document.createElement("option");
+                opt.value = li;
+                opt.name = 'area_2';
+                opt.innerHTML = li;
+                target.appendChild(opt);
+            });
+            console.log(target.options.length)
+            
+        }
+        
+        function addressKindChange_2(e, mon_list) {
+            var dict_file = mon_list
+            var target = document.getElementById("addressKindD_2");
+            var d = e.value;
+            target.options.length = 0;
+            var li = mon_list;
+            if(d != '2020'){
+            li.forEach(function(li) {
+                var opt = document.createElement("option");
+                opt.value = li;
+                opt.name = 'time_2_1';
+                opt.innerHTML = li+'월';
+                target.appendChild(opt);
+            });}
+            else{
+                li.forEach(function(li) {
+                var opt = document.createElement("option");
+                opt.value = li;
+                opt.name = 'time_2_1';
+                opt.innerHTML = li+'월';
+                target.appendChild(opt);
+            });}
+            console.log(target.options.length)
+            
+        }
+    </script>
+
+    <meta charset="UTF-8">
+    <title>악취리스크 분석 시스템</title>
+    <style> 
+        body {
+            font-family:'Malgun Gothic'; }
+        
+        header {
+            background-color:black;
+            width:100%;
+            height:100px; 
+            /* padding:2px 2px; 2px; 2px; */
+            
+        }
+        header.left {
+            width: 25%;
+            float: left;
+            box-sizing: border-box;
+            color:white;
+            display:inline;
+            text-align:center;
+            border-left: 1px solid gray;
+        }
+
+
+        
+        nav {
+            background-color:#404040;
+            color:white;
+            width:22%;
+            height:700px;
+            float:left;
+            /* padding:2px; */
+            text-align: center;
+        }
+        section {
+            background-color:lightgray;
+            width:77.3%;
+            height:690px;
+            text-align:left;
+            float:left;
+            padding:5px;
+
+        }
+        nav, section {text-align:left;}
+        nav,section{line-height:30px;}
+        header{line-height:100px}
+        #input_wrapper{
+            width:70%;
+            height:40px;
+            float:center;
+            margin: 5px 5px 5px 5px;
+
+        }
+        #gu_wrapper{
+            width:95%;
+            /* height:280px; */
+            float:left;
+            padding: 2px;
+        }   
+        #sum_wrapper{
+            width:30%;
+            height:220px;
+            float:left;
+            padding: 5px 5px 5px 5px;
+            border: 1px solid black;
+            background-color:white;
+
+        } 
+        #img_wrapper{
+            width:68%;
+            height:100%;
+            float:right;
+            text-align: center;
+            background-color:white;
+            border: 1px solid black;
+
+        } 
+        #df_wrapper{
+            width:30%;
+            height:100%;
+            float:left;
+            padding: 5px 5px 0px 5px;
+            background:white;
+            border: 1px solid black;
+
+        } 
+        #df_in_wrapper{
+            width:100%;
+            height:90%;
+            float:left;
+            /* margin: 5px 5px 5px 5px; */
+
+        }
+        
+        #gu_table{
+            width:400px;
+            height: 500px;
+            float:left;
+            padding: 5px 5px 5px 5px;
+            background-color:white;
+            border: 1px solid black;
+
+        } 
+        #dong_table{
+            width:420px;
+            height: 500px;
+            float:left;
+            padding: 5px 5px 5px 5px;
+            background-color:white;
+            border: 1px solid black;
+
+        } 
+        
+        #input_data_table {
+            
+            width:90%;
+            height:220px;
+            float:left;
+            padding: 3px;
+            font-size: 13px;
+            margin: 2px 2px 2px 2px; 
+        }
+        #tot__add, #totadd { display: none; }
+       
+   
+       #nav_menu ul {
+        height:100px;
+        line-height:100px;
+        list-style-type:none;
+        /* 좌측 여백 없애기 */
+        margin:0 0 0 0;
+        padding-left:0px;
+        /* 우측 정렬 하기 */
+        float:left;
+
+
+        }
+
+        #nav_menu ul li {
+        line-height:100px;
+        display:inline;
+        border-left: 1px solid #c0c0c0;
+        /* 테두리와 메뉴 간격 벌리기. padding: 위 오른쪽 아래 왼쪽; */
+        padding: 30px 10px 30px 10px;
+        /* 메뉴와 테두리 사이 간격 벌리기. margin: 위 오른쪽 아래 왼쪽; */
+        margin: 0px 0px 0px 0px;
+
+
+        }
+        
+        #nav_menu ul li:first-child {
+
+        border-left: none;
+        }
+        a:link { color: white; }
+
+		a:visited { color: white;}
+
+		a:hover { color: yellow; }
+
+		a:active { color: yellow;}
+        a { text-decoration:none; padding: 30px 10px; }
+        
+        label{ display:inline-block; width:110px; line-height:50px; }
+        optgroup { font-size:7px; }
+        
+        #select_group{
+         width:220px;   
+         text-align:center;
+        }
+        
+        .test {
+        border: 2px solid white;
+        line-height: 0;
+        text-align: left; 
+        margin-top:5px;
+        width:90%;
+        background-color:#404040;
+        margin-bottom:5px;
+        }
+        
+
+        .test span { 
+        background-color:#404040;
+        padding: 0 10px;
+        margin: 0 15px;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <header>
+            <header class='left' style="font-size:18px;background-color:#4472c4;font-weight:bold"><a href="menu1">악취민원 분석</a></header>
+            <header class='left'style="font-size:18px;font-weight:bold;"><a href="menu2" >인구대비 악취발생분석</a></header>
+            <header class='left'style="font-size:18px;font-weight:bold;"><a href="menu3">면적대비 악취발생분석</a></header>
+            <header class='left'style="font-size:18px;font-weight:bold;"><a href="menu4" style='width:150px;height:80px;'>하수관로 연장 및 준설대비 악취발생분석</a></header>   
+
+           
+            
+    </header>
+
+    <form method="GET", action = "/menu1_getgraph">
+        <nav>
+        <h3 style='text-align:left;'>
+                    <div style ='background-color:#404040;color:white;'>&nbsp;&nbsp;&nbsp;악취 민원 분석 </div>
+        </h3>
+
+        <div style ='position:relative; top:10px; left:10px;width:95%;' align="center">
+                <div class='test' style='text-align:left;'>
+                    &nbsp;<span><font size="4px" color='white'> 검색 기간 </font></span></br>
+                    <div style='padding-top:20px;padding-bottom:20px;line-height:30px;'>
+    
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font size="3px" color='white'>- 시작일 :</font> 
+                            <select name = "time_1_1" style='font-size:12pt;'>
+                                <option>년도</option>
+                                    {% for i in year_list %}
+                                <option value = {{i}} name='time_1_1'>{{i}}년</option>
+                                    {% endfor %}
+                            </select>
+                            <select name = "time_1_2" style='font-size:12pt;'>
+                                <option>월</option>
+                                    {% for i in mon_list %}
+                                <option value = {{i}} name="time_1_2">{{i}}월</option>
+                                    {% endfor %}
+                            </select></br> 
+                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font size="3px" color='white'>- 종료일 :</font> 
+                            <select name = "time_2_1" style='font-size:12pt;'>
+                                <option>년도</option>
+                                    {% for i in year_list %}
+                                <option value = {{i}} name="time_2_1">{{i}}년</option>
+                                    {% endfor %}
+                            </select>
+                            <select name = "time_2_2" style='font-size:12pt;'>
+                                <option>월</option>
+                                    {% for i in mon_list %}
+                                <option value = {{i}} name="time_2_2">{{i}}월</option>
+                                    {% endfor %}
+                            </select>
+                    </div>
+                </div>
+                </br>
+                <div class='test' style='text-align:left;'>
+
+                    &nbsp;<span><font size="4px" color='white'> 대상 지역  </font></span></br>
+                        <div style='padding-top:20px;padding-bottom:20px;line-height:30px;'>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font size="3px" color='white'>  - 자치구 명 :</font> 
+                        <select name = "area_1" style='font-size:12pt;'  onchange="addressKindChange(this, {{dict_file}})">
+                                        <option>구 선택 </option>
+                                            {% for i in dict_file.keys() %}
+                                        <option value = {{i}} name='area_1' >{{i}}</option>
+                                            {% endfor %}
+                        </select>
+                        </br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font size="3px" color='white'>  - 동&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;명 :</font> 
+                        <select name="area_2" style='font-size:12pt;' id="addressKindD" >
+
+                                        <option >동 선택</option>
+
+                        </select>
+                        
+                        </div>
+                </div>
+                </br>
+                <div class='test' style='text-align:left;'>
+                    &nbsp;<span><font size="4px" color='white'> 출력 형식 </font></span></br>
+                        <div style='padding-top:20px;padding-bottom:20px;line-height:30px;'>
+                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<select name = "option" style='font-size:12pt;'>
+                            <option value = '발생지점' name='발생지점'>발생지점</option>
+                            <option value = '분포도' name='분포도'>분포도</option>
+                            <option value = '통계산출' name='통계산출'>통계산출</option>
+                            <option value = '지자체별분석' name='지자체별분석'>지자체별분석</option>
+                            <option value = '자료저장' name='자료저장'>화일저장</option>
+                        </select>
+                        &nbsp;<button name="submit" value="지도" type="submit" style='position: relative;  left: 5px;width:100px;color:white;background-color:black;border: 1px  solid white;'>출력하기</button>
+                        </div>
+                </div>
+                </br>
+                {% if target_area is not defined %}
+    
+           
+                {% else %}
+                
+                <center>
+                <div class='test' style='text-align:center;'>
+                    &nbsp;<span style='text-align:center;'><font size="4px" color='white'> 분석 조건 </font></span></br>
+                    <div style='padding-top:20px;padding-bottom:20px;line-height:30px;font-size: 13px;text-align:left;'>
+
+                          {% if target_area2 is defined %}
+                                {% if '전체' in target_area2  %}
+                                    &nbsp; 입력 구역 : {{ target_area[0] }} 전체 </br>
+                                {% elif ('전체' not in target_area2)   %}
+                                    &nbsp; 입력 구역 : {{ target_area[0] }} {{ target_area2[0] }} </br>
+                                {% endif %}
+                          {% else %}
+                                {% if '서울시' in target_area %}
+                                    &nbsp; 입력 구역 : 서울시 전체 </br>
+                                {% else %}
+                                    &nbsp; 입력 구역 : {{ target_area[0] }} </br>
+                                {% endif %}
+                          {% endif %}
+                         &nbsp; 입력 기간 : {{ target_date1 }} ~ {{target_date2}}</br> 
+                         &nbsp; 출력 형식 : {{option_graph}} </br>    
+                    {% endif %}
+
+                    </div>
+    
+                </div>    
+                </center>
+        </div>
+                
+    </nav>
+ </form>
+    <section>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <script type="text/javascript">
+              alert("{{messages[-1]}}");
+            </script>
+          {% endif %}
+        {% endwith %}
+
+        {% if option_graph=='발생지점'%}
+            <iframe class="map", src="/menu1_map_point" width="100%" height="100%"></iframe>
+        {% elif option_graph=='분포도'%}
+           <iframe class="map", src="/menu1_map_heat" width="100%" height="100%"></iframe>
+        {% elif option_graph=='통계산출' %}
+        
+            <div id = 'df_wrapper'>
+                <iframe class="DF", src="/data_frame_1" width="100%" height="100%"></iframe>
+            </div>
+            <div id ='img_wrapper'>
+                <iframe class="DF", src="/menu_1_graph" width="100%" height="100%"></iframe>
+            </div>
+        {% elif option_graph=='지자체별분석' %}   
+            <iframe class="map", src="/menu_2_map" width="100%" height="100%"></iframe>
+        {% else %}
+            <iframe class="map", src="/menu_1_root" width="100%" height="100%"></iframe>
+        {% endif %}
+      
+ 
+    
+</body>
+</html>
+          
+
+                  
+      
+            
